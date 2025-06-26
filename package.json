@@ -1,0 +1,23 @@
+{
+  "name": "neon-v2.1",
+  "version": "2.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "type-check": "turbo run type-check",
+    "db:push": "cd packages/database && npx prisma db push",
+    "db:generate": "cd packages/database && npx prisma generate",
+    "db:studio": "cd packages/database && npx prisma studio"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "turbo": "^1.10.0",
+    "typescript": "^5.0.0"
+  }
+} 

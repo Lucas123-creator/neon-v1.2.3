@@ -1,0 +1,102 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Agent Training & Learning Models (Prompt 009)
+model Agent {
+  id          String @id @default(cuid())
+  name        String
+  type        String // "UGC", "outreach", "email", etc.
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  trainingEvents TrainingEvent[]
+  assets         Asset[]
+  
+  @@map("agents")
+}
+
+model TrainingEvent {
+  id          String @id @default(cuid())
+  agentId     String
+  agent       Agent  @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  
+  eventType   String // "prompt_update", "fine_tune", "score_adjustment"
+  scoreChange Float?
+  scoreBefore Float?
+  scoreAfter  Float?
+  
+  metadata    Json?
+  notes       String?
+  
+  createdAt   DateTime @default(now())
+  
+  @@map("training_events")
+}
+
+// Asset Library Models (Prompt 010)
+model Asset {
+  id          String @id @default(cuid())
+  agentId     String?
+  agent       Agent? @relation(fields: [agentId], references: [id], onDelete: SetNull)
+  
+  type        String // "image", "video", "copy", "text"
+  title       String
+  content     String? // For text/copy assets
+  url         String? // For media assets
+  
+  status      String @default("pending") // "pending", "approved", "rejected"
+  
+  campaignId  String?
+  tags        String[] // For filtering
+  
+  approvedAt  DateTime?
+  approvedBy  String?
+  rejectedAt  DateTime?
+  rejectedBy  String?
+  
+  parentId    String? // For revisions/remixes
+  parent      Asset?  @relation("AssetRevisions", fields: [parentId], references: [id])
+  revisions   Asset[] @relation("AssetRevisions")
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("assets")
+}
+
+// System Settings Models (Prompt 011)
+model Setting {
+  id          String @id @default(cuid())
+  key         String @unique
+  value       String
+  type        String // "string", "number", "boolean", "json", "encrypted"
+  category    String // "ai_behavior", "api_keys", "features", "limits"
+  description String?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("settings")
+}
+
+model FeatureFlag {
+  id          String @id @default(cuid())
+  key         String @unique
+  enabled     Boolean @default(false)
+  description String?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("feature_flags")
+} 
