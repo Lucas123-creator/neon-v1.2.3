@@ -13,11 +13,24 @@
     "type-check": "turbo run type-check",
     "db:push": "cd packages/database && npx prisma db push",
     "db:generate": "cd packages/database && npx prisma generate",
-    "db:studio": "cd packages/database && npx prisma studio"
+    "db:studio": "cd packages/database && npx prisma studio",
+    "auto-commit": "./scripts/auto-commit.sh",
+    "auto-commit:push": "./scripts/auto-commit.sh --push",
+    "watch-commit": "node scripts/watch-and-commit.js",
+    "watch-commit:push": "node scripts/watch-and-commit.js --auto-push",
+    "watch-commit:verbose": "node scripts/watch-and-commit.js --verbose",
+    "prepare": "husky install",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "clean": "turbo run clean && rm -rf .turbo",
+    "reset": "npm run clean && rm -rf node_modules && npm install"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
     "turbo": "^1.10.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "husky": "^8.0.3",
+    "chokidar": "^3.5.3",
+    "prettier": "^3.0.0"
   }
-} 
+}

@@ -1,14 +1,14 @@
-import Link from 'next/link'
-import { 
-  Brain, 
-  Images, 
-  Settings, 
-  TrendingUp, 
-  CheckCircle, 
+import Link from "next/link";
+import {
+  Brain,
+  Images,
+  Settings,
+  TrendingUp,
+  CheckCircle,
   Clock,
-  AlertTriangle 
-} from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@neon/ui'
+  AlertTriangle,
+} from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@neon/ui";
 
 export default function DashboardPage() {
   return (
@@ -17,7 +17,8 @@ export default function DashboardPage() {
       <div className="space-y-2">
         <h1 className="text-3xl font-bold">AI System Dashboard</h1>
         <p className="text-muted-foreground">
-          Monitor agent performance, manage assets, and configure system settings
+          Monitor agent performance, manage assets, and configure system
+          settings
         </p>
       </div>
 
@@ -30,9 +31,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">12</div>
-            <p className="text-xs text-muted-foreground">
-              +2 from last month
-            </p>
+            <p className="text-xs text-muted-foreground">+2 from last month</p>
           </CardContent>
         </Card>
 
@@ -43,9 +42,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">1,247</div>
-            <p className="text-xs text-muted-foreground">
-              +180 this week
-            </p>
+            <p className="text-xs text-muted-foreground">+180 this week</p>
           </CardContent>
         </Card>
 
@@ -56,22 +53,20 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">87%</div>
-            <p className="text-xs text-muted-foreground">
-              +5% from last week
-            </p>
+            <p className="text-xs text-muted-foreground">+5% from last week</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Avg Performance</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Avg Performance
+            </CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">0.84</div>
-            <p className="text-xs text-muted-foreground">
-              +0.12 improvement
-            </p>
+            <p className="text-xs text-muted-foreground">+0.12 improvement</p>
           </CardContent>
         </Card>
       </div>
@@ -92,7 +87,8 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground mb-4">
-                Track AI agent performance, learning events, and identify improvement opportunities with visual analytics.
+                Track AI agent performance, learning events, and identify
+                improvement opportunities with visual analytics.
               </p>
               <div className="space-y-2">
                 <div className="flex items-center text-sm">
@@ -126,7 +122,8 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground mb-4">
-                Manage AI-generated content including images, videos, and copy with approval workflows and version control.
+                Manage AI-generated content including images, videos, and copy
+                with approval workflows and version control.
               </p>
               <div className="space-y-2">
                 <div className="flex items-center text-sm">
@@ -160,7 +157,8 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground mb-4">
-                Configure AI behavior, manage API keys, control feature flags, and adjust system-wide settings.
+                Configure AI behavior, manage API keys, control feature flags,
+                and adjust system-wide settings.
               </p>
               <div className="space-y-2">
                 <div className="flex items-center text-sm">
@@ -181,5 +179,5 @@ export default function DashboardPage() {
         </Card>
       </div>
     </div>
-  )
-} 
+  );
+}

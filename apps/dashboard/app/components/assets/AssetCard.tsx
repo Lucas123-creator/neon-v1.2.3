@@ -1,61 +1,61 @@
-'use client'
+"use client";
 
-import { 
-  Images, 
-  Video, 
-  FileText, 
+import {
+  Images,
+  Video,
+  FileText,
   Eye,
   Download,
   CheckCircle,
   XCircle,
   Clock,
   Copy,
-  MoreHorizontal
-} from 'lucide-react'
-import { Card, CardContent, CardHeader, Button } from '@neon/ui'
-import type { RouterOutputs } from '@neon/api'
+  MoreHorizontal,
+} from "lucide-react";
+import { Card, CardContent, CardHeader, Button } from "@neon/ui";
+import type { RouterOutputs } from "@neon/api";
 
-type Asset = RouterOutputs['assets']['getAssets']['assets'][0]
+type Asset = RouterOutputs["assets"]["getAssets"]["assets"][0];
 
 interface AssetCardProps {
-  asset: Asset
-  onApprove: () => void
-  onReject: () => void
+  asset: Asset;
+  onApprove: () => void;
+  onReject: () => void;
 }
 
 export function AssetCard({ asset, onApprove, onReject }: AssetCardProps) {
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'image':
-        return <Images className="h-5 w-5" />
-      case 'video':
-        return <Video className="h-5 w-5" />
+      case "image":
+        return <Images className="h-5 w-5" />;
+      case "video":
+        return <Video className="h-5 w-5" />;
       default:
-        return <FileText className="h-5 w-5" />
+        return <FileText className="h-5 w-5" />;
     }
-  }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'approved':
-        return 'text-green-600 bg-green-50 border-green-200'
-      case 'rejected':
-        return 'text-red-600 bg-red-50 border-red-200'
+      case "approved":
+        return "text-green-600 bg-green-50 border-green-200";
+      case "rejected":
+        return "text-red-600 bg-red-50 border-red-200";
       default:
-        return 'text-orange-600 bg-orange-50 border-orange-200'
+        return "text-orange-600 bg-orange-50 border-orange-200";
     }
-  }
+  };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'approved':
-        return <CheckCircle className="h-4 w-4" />
-      case 'rejected':
-        return <XCircle className="h-4 w-4" />
+      case "approved":
+        return <CheckCircle className="h-4 w-4" />;
+      case "rejected":
+        return <XCircle className="h-4 w-4" />;
       default:
-        return <Clock className="h-4 w-4" />
+        return <Clock className="h-4 w-4" />;
     }
-  }
+  };
 
   return (
     <Card className="group hover:shadow-lg transition-all duration-200">
@@ -63,12 +63,18 @@ export function AssetCard({ asset, onApprove, onReject }: AssetCardProps) {
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2">
             {getTypeIcon(asset.type)}
-            <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium border ${getStatusColor(asset.status)}`}>
+            <div
+              className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium border ${getStatusColor(asset.status)}`}
+            >
               {getStatusIcon(asset.status)}
               <span className="capitalize">{asset.status}</span>
             </div>
           </div>
-          <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="opacity-0 group-hover:opacity-100 transition-opacity"
+          >
             <MoreHorizontal className="h-4 w-4" />
           </Button>
         </div>
@@ -77,14 +83,14 @@ export function AssetCard({ asset, onApprove, onReject }: AssetCardProps) {
       <CardContent className="space-y-4">
         {/* Preview */}
         <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
-          {asset.type === 'image' && asset.url ? (
-            <img 
-              src={asset.url} 
+          {asset.type === "image" && asset.url ? (
+            <img
+              src={asset.url}
               alt={asset.title}
               className="w-full h-full object-cover rounded-lg"
             />
-          ) : asset.type === 'video' && asset.url ? (
-            <video 
+          ) : asset.type === "video" && asset.url ? (
+            <video
               src={asset.url}
               className="w-full h-full object-cover rounded-lg"
               controls={false}
@@ -93,7 +99,9 @@ export function AssetCard({ asset, onApprove, onReject }: AssetCardProps) {
             <div className="text-center">
               {getTypeIcon(asset.type)}
               <p className="text-xs text-muted-foreground mt-2">
-                {asset.type === 'copy' || asset.type === 'text' ? 'Text Content' : 'No Preview'}
+                {asset.type === "copy" || asset.type === "text"
+                  ? "Text Content"
+                  : "No Preview"}
               </p>
             </div>
           )}
@@ -130,11 +138,7 @@ export function AssetCard({ asset, onApprove, onReject }: AssetCardProps) {
 
         {/* Meta */}
         <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <div>
-            {asset.agent && (
-              <span>{asset.agent.name}</span>
-            )}
-          </div>
+          <div>{asset.agent && <span>{asset.agent.name}</span>}</div>
           <span>{new Date(asset.createdAt).toLocaleDateString()}</span>
         </div>
 
@@ -144,19 +148,19 @@ export function AssetCard({ asset, onApprove, onReject }: AssetCardProps) {
             <Eye className="h-4 w-4 mr-2" />
             View
           </Button>
-          {asset.status === 'pending' && (
+          {asset.status === "pending" && (
             <>
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={onApprove}
                 className="text-green-600 hover:bg-green-50"
               >
                 <CheckCircle className="h-4 w-4" />
               </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={onReject}
                 className="text-red-600 hover:bg-red-50"
               >
@@ -164,7 +168,7 @@ export function AssetCard({ asset, onApprove, onReject }: AssetCardProps) {
               </Button>
             </>
           )}
-          {asset.status === 'approved' && (
+          {asset.status === "approved" && (
             <Button variant="outline" size="sm">
               <Copy className="h-4 w-4" />
             </Button>
@@ -174,10 +178,11 @@ export function AssetCard({ asset, onApprove, onReject }: AssetCardProps) {
         {/* Revision Info */}
         {asset._count?.revisions && asset._count.revisions > 0 && (
           <div className="text-xs text-muted-foreground border-t pt-2">
-            {asset._count.revisions} revision{asset._count.revisions > 1 ? 's' : ''}
+            {asset._count.revisions} revision
+            {asset._count.revisions > 1 ? "s" : ""}
           </div>
         )}
       </CardContent>
     </Card>
-  )
-} 
+  );
+}

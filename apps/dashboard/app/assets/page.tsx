@@ -1,10 +1,10 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { 
-  Images, 
-  Video, 
-  FileText, 
+import { useState } from "react";
+import {
+  Images,
+  Video,
+  FileText,
   Filter,
   Search,
   Plus,
@@ -15,68 +15,75 @@ import {
   CheckCircle,
   XCircle,
   Clock,
-  MoreHorizontal
-} from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle, Button } from '@neon/ui'
-import { api } from '../providers/trpc-provider'
-import { AssetCard } from '../components/assets/AssetCard'
+  MoreHorizontal,
+} from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, Button } from "@neon/ui";
+import { api } from "../providers/trpc-provider";
+import { AssetCard } from "../components/assets/AssetCard";
 
 export default function AssetsPage() {
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
-  const [filterType, setFilterType] = useState<'all' | 'image' | 'video' | 'copy' | 'text'>('all')
-  const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all')
-  const [searchQuery, setSearchQuery] = useState('')
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [filterType, setFilterType] = useState<
+    "all" | "image" | "video" | "copy" | "text"
+  >("all");
+  const [filterStatus, setFilterStatus] = useState<
+    "all" | "pending" | "approved" | "rejected"
+  >("all");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const { data: assetsData } = api.assets.getAssets.useQuery({
-    type: filterType === 'all' ? undefined : filterType,
-    status: filterStatus === 'all' ? undefined : filterStatus,
+    type: filterType === "all" ? undefined : filterType,
+    status: filterStatus === "all" ? undefined : filterStatus,
     limit: 20,
     offset: 0,
-  })
+  });
 
-  const { data: tags = [] } = api.assets.getTags.useQuery()
+  const { data: tags = [] } = api.assets.getTags.useQuery();
 
-  const assets = assetsData?.assets || []
-  const totalAssets = assetsData?.total || 0
+  const assets = assetsData?.assets || [];
+  const totalAssets = assetsData?.total || 0;
 
-  const filteredAssets = assets.filter(asset => 
-    searchQuery === '' || 
-    asset.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    asset.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-  )
+  const filteredAssets = assets.filter(
+    (asset) =>
+      searchQuery === "" ||
+      asset.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      asset.tags.some((tag) =>
+        tag.toLowerCase().includes(searchQuery.toLowerCase()),
+      ),
+  );
 
-  const approveAsset = api.assets.approveAsset.useMutation()
-  const rejectAsset = api.assets.rejectAsset.useMutation()
+  const approveAsset = api.assets.approveAsset.useMutation();
+  const rejectAsset = api.assets.rejectAsset.useMutation();
 
   const handleApprove = async (assetId: string) => {
-    await approveAsset.mutateAsync({ id: assetId, approvedBy: 'current-user' })
-  }
+    await approveAsset.mutateAsync({ id: assetId, approvedBy: "current-user" });
+  };
 
   const handleReject = async (assetId: string) => {
-    await rejectAsset.mutateAsync({ id: assetId, rejectedBy: 'current-user' })
-  }
+    await rejectAsset.mutateAsync({ id: assetId, rejectedBy: "current-user" });
+  };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'approved':
-        return <CheckCircle className="h-4 w-4 text-green-600" />
-      case 'rejected':
-        return <XCircle className="h-4 w-4 text-red-600" />
+      case "approved":
+        return <CheckCircle className="h-4 w-4 text-green-600" />;
+      case "rejected":
+        return <XCircle className="h-4 w-4 text-red-600" />;
       default:
-        return <Clock className="h-4 w-4 text-orange-600" />
+        return <Clock className="h-4 w-4 text-orange-600" />;
     }
-  }
+  };
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'image':
-        return <Images className="h-4 w-4" />
-      case 'video':
-        return <Video className="h-4 w-4" />
+      case "image":
+        return <Images className="h-4 w-4" />;
+      case "video":
+        return <Video className="h-4 w-4" />;
       default:
-        return <FileText className="h-4 w-4" />
+        return <FileText className="h-4 w-4" />;
     }
-  }
+  };
 
   return (
     <div className="space-y-8">
@@ -85,7 +92,8 @@ export default function AssetsPage() {
         <div className="space-y-2">
           <h1 className="text-3xl font-bold">AI Asset Library</h1>
           <p className="text-muted-foreground">
-            Manage AI-generated content with approval workflows and version control
+            Manage AI-generated content with approval workflows and version
+            control
           </p>
         </div>
         <Button>
@@ -103,24 +111,22 @@ export default function AssetsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalAssets}</div>
-            <p className="text-xs text-muted-foreground">
-              Across all types
-            </p>
+            <p className="text-xs text-muted-foreground">Across all types</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Pending Review</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Pending Review
+            </CardTitle>
             <Clock className="h-4 w-4 text-orange-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-orange-600">
-              {assets.filter(a => a.status === 'pending').length}
+              {assets.filter((a) => a.status === "pending").length}
             </div>
-            <p className="text-xs text-muted-foreground">
-              Awaiting approval
-            </p>
+            <p className="text-xs text-muted-foreground">Awaiting approval</p>
           </CardContent>
         </Card>
 
@@ -131,11 +137,9 @@ export default function AssetsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {assets.filter(a => a.status === 'approved').length}
+              {assets.filter((a) => a.status === "approved").length}
             </div>
-            <p className="text-xs text-muted-foreground">
-              Ready to use
-            </p>
+            <p className="text-xs text-muted-foreground">Ready to use</p>
           </CardContent>
         </Card>
 
@@ -146,9 +150,7 @@ export default function AssetsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{tags.length}</div>
-            <p className="text-xs text-muted-foreground">
-              Available tags
-            </p>
+            <p className="text-xs text-muted-foreground">Available tags</p>
           </CardContent>
         </Card>
       </div>
@@ -169,7 +171,7 @@ export default function AssetsPage() {
           </div>
 
           {/* Type Filter */}
-          <select 
+          <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value as any)}
             className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
@@ -182,7 +184,7 @@ export default function AssetsPage() {
           </select>
 
           {/* Status Filter */}
-          <select 
+          <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value as any)}
             className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
@@ -197,16 +199,16 @@ export default function AssetsPage() {
         {/* View Toggle */}
         <div className="flex items-center gap-2">
           <Button
-            variant={viewMode === 'grid' ? 'default' : 'outline'}
+            variant={viewMode === "grid" ? "default" : "outline"}
             size="sm"
-            onClick={() => setViewMode('grid')}
+            onClick={() => setViewMode("grid")}
           >
             <Grid className="h-4 w-4" />
           </Button>
           <Button
-            variant={viewMode === 'list' ? 'default' : 'outline'}
+            variant={viewMode === "list" ? "default" : "outline"}
             size="sm"
-            onClick={() => setViewMode('list')}
+            onClick={() => setViewMode("list")}
           >
             <List className="h-4 w-4" />
           </Button>
@@ -219,14 +221,16 @@ export default function AssetsPage() {
           <Images className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-medium mb-2">No assets found</h3>
           <p className="text-muted-foreground">
-            {searchQuery ? 'Try adjusting your search or filters' : 'Upload your first asset to get started'}
+            {searchQuery
+              ? "Try adjusting your search or filters"
+              : "Upload your first asset to get started"}
           </p>
         </div>
-      ) : viewMode === 'grid' ? (
+      ) : viewMode === "grid" ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredAssets.map((asset) => (
-            <AssetCard 
-              key={asset.id} 
+            <AssetCard
+              key={asset.id}
               asset={asset}
               onApprove={() => handleApprove(asset.id)}
               onReject={() => handleReject(asset.id)}
@@ -252,11 +256,13 @@ export default function AssetsPage() {
                           </>
                         )}
                         <span>•</span>
-                        <span>{new Date(asset.createdAt).toLocaleDateString()}</span>
+                        <span>
+                          {new Date(asset.createdAt).toLocaleDateString()}
+                        </span>
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-2">
                     {getStatusIcon(asset.status)}
                     <Button variant="ghost" size="sm">
@@ -291,5 +297,5 @@ export default function AssetsPage() {
         </div>
       )}
     </div>
-  )
-} 
+  );
+}

@@ -3,7 +3,7 @@ const nextConfig = {
   experimental: {
     appDir: true,
   },
-  transpilePackages: ['@neon/ui', '@neon/api', '@neon/database'],
-}
+  transpilePackages: ["@neon/ui", "@neon/api", "@neon/database"],
+};
 
-module.exports = nextConfig 
+module.exports = nextConfig;

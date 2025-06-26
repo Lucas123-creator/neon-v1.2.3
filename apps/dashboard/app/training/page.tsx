@@ -1,31 +1,34 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { 
-  Brain, 
-  TrendingUp, 
-  TrendingDown, 
+import { useState } from "react";
+import {
+  Brain,
+  TrendingUp,
+  TrendingDown,
   AlertTriangle,
   Calendar,
   Filter,
-  Plus
-} from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle, Button } from '@neon/ui'
-import { api } from '../providers/trpc-provider'
-import { AgentLearningGraph } from '../components/training/AgentLearningGraph'
-import { ImprovementLog } from '../components/training/ImprovementLog'
+  Plus,
+} from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, Button } from "@neon/ui";
+import { api } from "../providers/trpc-provider";
+import { AgentLearningGraph } from "../components/training/AgentLearningGraph";
+import { ImprovementLog } from "../components/training/ImprovementLog";
 
 export default function TrainingPage() {
-  const [selectedAgent, setSelectedAgent] = useState<string>('')
-  const [timeRange, setTimeRange] = useState<'week' | 'month' | 'quarter' | 'year'>('month')
+  const [selectedAgent, setSelectedAgent] = useState<string>("");
+  const [timeRange, setTimeRange] = useState<
+    "week" | "month" | "quarter" | "year"
+  >("month");
 
-  const { data: agents = [] } = api.training.getAgents.useQuery()
-  const { data: opportunities = [] } = api.training.getImprovementOpportunities.useQuery()
-  
+  const { data: agents = [] } = api.training.getAgents.useQuery();
+  const { data: opportunities = [] } =
+    api.training.getImprovementOpportunities.useQuery();
+
   const { data: trainingData } = api.training.getAgentTrainingHistory.useQuery(
     { agentId: selectedAgent, timeRange },
-    { enabled: !!selectedAgent }
-  )
+    { enabled: !!selectedAgent },
+  );
 
   return (
     <div className="space-y-8">
@@ -34,7 +37,8 @@ export default function TrainingPage() {
         <div className="space-y-2">
           <h1 className="text-3xl font-bold">Agent Training Dashboard</h1>
           <p className="text-muted-foreground">
-            Track AI agent performance, learning events, and identify improvement opportunities
+            Track AI agent performance, learning events, and identify
+            improvement opportunities
           </p>
         </div>
         <Button>
@@ -60,7 +64,9 @@ export default function TrainingPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Avg Performance</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Avg Performance
+            </CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -73,27 +79,29 @@ export default function TrainingPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Training Events</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Training Events
+            </CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">247</div>
-            <p className="text-xs text-muted-foreground">
-              This month
-            </p>
+            <p className="text-xs text-muted-foreground">This month</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Need Attention</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Need Attention
+            </CardTitle>
             <AlertTriangle className="h-4 w-4 text-orange-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{opportunities.length}</div>
-            <p className="text-xs text-muted-foreground">
-              Agents with issues
-            </p>
+            <div className="text-2xl font-bold text-orange-600">
+              {opportunities.length}
+            </div>
+            <p className="text-xs text-muted-foreground">Agents with issues</p>
           </CardContent>
         </Card>
       </div>
@@ -103,7 +111,7 @@ export default function TrainingPage() {
         <div className="flex items-center gap-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">Agent</label>
-            <select 
+            <select
               value={selectedAgent}
               onChange={(e) => setSelectedAgent(e.target.value)}
               className="flex h-10 w-[200px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
@@ -119,7 +127,7 @@ export default function TrainingPage() {
 
           <div className="space-y-2">
             <label className="text-sm font-medium">Time Range</label>
-            <select 
+            <select
               value={timeRange}
               onChange={(e) => setTimeRange(e.target.value as any)}
               className="flex h-10 w-[150px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
@@ -185,7 +193,8 @@ export default function TrainingPage() {
                         </div>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        {item.agent.type} • Score: {item.currentScore.toFixed(2)}
+                        {item.agent.type} • Score:{" "}
+                        {item.currentScore.toFixed(2)}
                       </p>
                       {item.trend < -0.1 && (
                         <p className="text-xs text-red-600 mt-1">
@@ -217,5 +226,5 @@ export default function TrainingPage() {
         </CardContent>
       </Card>
     </div>
-  )
-} 
+  );
+}

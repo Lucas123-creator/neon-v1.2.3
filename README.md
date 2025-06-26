@@ -5,18 +5,21 @@ A comprehensive AI agent management platform featuring training analytics, asset
 ## 🚀 Features
 
 ### 📊 Agent Training Dashboard (Prompt 009)
+
 - **Performance Tracking**: Real-time agent performance metrics and graphs
 - **Learning Events**: Detailed logs of training events and score changes
 - **Regression Detection**: Automatic alerts for declining agent performance
 - **Improvement Opportunities**: Identify agents needing attention
 
 ### 🎨 AI Asset Library (Prompt 010)
+
 - **Multi-Media Support**: Images, videos, copy, and text content
 - **Approval Workflows**: Review and approve AI-generated content
 - **Version Control**: Track revisions and content history
 - **Smart Filtering**: Filter by type, status, agent, campaigns, and tags
 
 ### ⚙️ System Settings (Prompt 011)
+
 - **AI Behavior Configuration**: Temperature, tokens, retry settings
 - **API Key Management**: Secure storage of encrypted API keys
 - **Feature Flags**: Dynamic feature toggles for system control
@@ -45,51 +48,59 @@ This is a **TypeScript monorepo** built with:
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18+ 
+
+- Node.js 18+
 - npm or yarn
 
 ### Installation
 
 1. **Clone and install dependencies**:
+
 ```bash
 cd Neon-v2.1
 npm install
 ```
 
 2. **Set up the database**:
+
 ```bash
 npm run db:generate
 npm run db:push
 ```
 
 3. **Start development server**:
+
 ```bash
 npm run dev
 ```
 
 4. **Open the dashboard**:
-Visit `http://localhost:3000` to access the Neon AI Dashboard.
+   Visit `http://localhost:3000` to access the Neon AI Dashboard.
 
 ## 📱 Dashboard Pages
 
 ### 🏠 Home Dashboard (`/`)
+
 - Overview of all system metrics
 - Quick access to all features
 - System health indicators
 
 ### 🧠 Training Dashboard (`/training`)
+
 - Agent performance graphs with Recharts
 - Training event timeline
 - Performance regression alerts
 - Agent management interface
 
 ### 🖼️ Asset Library (`/assets`)
+
 - Grid and list views for assets
 - Advanced filtering and search
 - Approval workflow actions
 - Asset preview and metadata
 
 ### ⚙️ Settings (`/settings`)
+
 - AI behavior tuning controls
 - Encrypted API key management
 - Feature flag toggles
@@ -112,12 +123,14 @@ The system uses **Prisma** with the following models:
 All API endpoints are **type-safe** using tRPC:
 
 ### Training APIs
+
 - `training.getAgents` - List all agents
 - `training.getAgentTrainingHistory` - Get performance data
 - `training.logTrainingEvent` - Log new training events
 - `training.getImprovementOpportunities` - Find problematic agents
 
 ### Asset APIs
+
 - `assets.getAssets` - List assets with filtering
 - `assets.createAsset` - Upload new asset
 - `assets.approveAsset` - Approve pending asset
@@ -125,6 +138,7 @@ All API endpoints are **type-safe** using tRPC:
 - `assets.reviseAsset` - Create asset revision
 
 ### Settings APIs
+
 - `settings.getSystemSettings` - Get all settings
 - `settings.updateSetting` - Update configuration
 - `settings.getFeatureFlags` - List feature flags
@@ -177,6 +191,7 @@ The application is ready for deployment on:
 ### Environment Variables
 
 Create `.env` files:
+
 ```bash
 # packages/database/.env
 DATABASE_URL="file:./dev.db"
@@ -205,4 +220,4 @@ This dashboard is designed to work seamlessly with autonomous AI agents:
 
 **🌟 Built for the future of AI agent management**
 
-This system provides enterprise-grade tools for managing, monitoring, and optimizing AI agents at scale. 
+This system provides enterprise-grade tools for managing, monitoring, and optimizing AI agents at scale.

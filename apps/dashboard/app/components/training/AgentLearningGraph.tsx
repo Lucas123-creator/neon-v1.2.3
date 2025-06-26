@@ -1,12 +1,20 @@
-'use client'
+"use client";
 
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
-import type { RouterOutputs } from '@neon/api'
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+import type { RouterOutputs } from "@neon/api";
 
-type TrainingData = RouterOutputs['training']['getAgentTrainingHistory']
+type TrainingData = RouterOutputs["training"]["getAgentTrainingHistory"];
 
 interface AgentLearningGraphProps {
-  data: TrainingData
+  data: TrainingData;
 }
 
 export function AgentLearningGraph({ data }: AgentLearningGraphProps) {
@@ -15,7 +23,7 @@ export function AgentLearningGraph({ data }: AgentLearningGraphProps) {
       <div className="flex items-center justify-center h-64 text-muted-foreground">
         No performance data available
       </div>
-    )
+    );
   }
 
   return (
@@ -29,14 +37,20 @@ export function AgentLearningGraph({ data }: AgentLearningGraphProps) {
           <p className="text-xs text-muted-foreground">Current Score</p>
         </div>
         <div className="text-center">
-          <div className={`text-2xl font-bold ${data.metrics.totalChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-            {data.metrics.totalChange >= 0 ? '+' : ''}{data.metrics.totalChange.toFixed(2)}
+          <div
+            className={`text-2xl font-bold ${data.metrics.totalChange >= 0 ? "text-green-600" : "text-red-600"}`}
+          >
+            {data.metrics.totalChange >= 0 ? "+" : ""}
+            {data.metrics.totalChange.toFixed(2)}
           </div>
           <p className="text-xs text-muted-foreground">Total Change</p>
         </div>
         <div className="text-center">
-          <div className={`text-2xl font-bold ${data.metrics.changePercentage >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-            {data.metrics.changePercentage >= 0 ? '+' : ''}{data.metrics.changePercentage.toFixed(1)}%
+          <div
+            className={`text-2xl font-bold ${data.metrics.changePercentage >= 0 ? "text-green-600" : "text-red-600"}`}
+          >
+            {data.metrics.changePercentage >= 0 ? "+" : ""}
+            {data.metrics.changePercentage.toFixed(1)}%
           </div>
           <p className="text-xs text-muted-foreground">Change %</p>
         </div>
@@ -47,26 +61,27 @@ export function AgentLearningGraph({ data }: AgentLearningGraphProps) {
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data.graphData}>
             <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-            <XAxis 
-              dataKey="date" 
+            <XAxis
+              dataKey="date"
               tick={{ fontSize: 12 }}
               tickFormatter={(value) => new Date(value).toLocaleDateString()}
             />
-            <YAxis 
-              tick={{ fontSize: 12 }}
-              domain={[0, 1]}
-            />
-            <Tooltip 
+            <YAxis tick={{ fontSize: 12 }} domain={[0, 1]} />
+            <Tooltip
               labelFormatter={(value) => new Date(value).toLocaleDateString()}
-              formatter={(value: number) => [value.toFixed(3), 'Score']}
+              formatter={(value: number) => [value.toFixed(3), "Score"]}
             />
-            <Line 
-              type="monotone" 
-              dataKey="score" 
-              stroke="hsl(var(--primary))" 
+            <Line
+              type="monotone"
+              dataKey="score"
+              stroke="hsl(var(--primary))"
               strokeWidth={2}
-              dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4 }}
-              activeDot={{ r: 6, stroke: 'hsl(var(--primary))', strokeWidth: 2 }}
+              dot={{ fill: "hsl(var(--primary))", strokeWidth: 2, r: 4 }}
+              activeDot={{
+                r: 6,
+                stroke: "hsl(var(--primary))",
+                strokeWidth: 2,
+              }}
             />
           </LineChart>
         </ResponsiveContainer>
@@ -86,9 +101,11 @@ export function AgentLearningGraph({ data }: AgentLearningGraphProps) {
           </div>
         </div>
         {data.agent.description && (
-          <p className="text-sm text-muted-foreground mt-2">{data.agent.description}</p>
+          <p className="text-sm text-muted-foreground mt-2">
+            {data.agent.description}
+          </p>
         )}
       </div>
     </div>
-  )
-} 
+  );
+}
