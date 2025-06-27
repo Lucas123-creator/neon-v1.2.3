@@ -24,13 +24,10 @@ export const assetsRouter = createTRPCRouter({
       if (type) where.type = type;
       if (status) where.status = status;
       if (campaignId) where.campaignId = campaignId;
-      if (tags && tags.length > 0) {
-        where.tags = {
-          hasSome: tags,
-        };
-      }
+      // Note: For SQLite compatibility, we can't use complex tag filtering
+      // This would require implementing custom filtering logic or using full-text search
 
-      const [assets, total] = await Promise.all([
+      const [rawAssets, total] = await Promise.all([
         ctx.prisma.asset.findMany({
           where,
           include: {
@@ -51,6 +48,12 @@ export const assetsRouter = createTRPCRouter({
         }),
         ctx.prisma.asset.count({ where }),
       ]);
+
+      // Deserialize tags for frontend compatibility
+      const assets = rawAssets.map((asset) => ({
+        ...asset,
+        tags: asset.tags ? (JSON.parse(asset.tags) as string[]) : [],
+      }));
 
       return {
         assets,
@@ -73,15 +76,21 @@ export const assetsRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      return await ctx.prisma.asset.create({
+      const rawAsset = await ctx.prisma.asset.create({
         data: {
           ...input,
-          tags: input.tags || [],
+          tags: input.tags ? JSON.stringify(input.tags) : null,
         },
         include: {
           agent: true,
         },
       });
+
+      // Deserialize tags for frontend compatibility
+      return {
+        ...rawAsset,
+        tags: rawAsset.tags ? (JSON.parse(rawAsset.tags) as string[]) : [],
+      };
     }),
 
   // Revise an existing asset
@@ -106,7 +115,7 @@ export const assetsRouter = createTRPCRouter({
         throw new Error("Parent asset not found");
       }
 
-      return await ctx.prisma.asset.create({
+      const rawAsset = await ctx.prisma.asset.create({
         data: {
           ...revisionData,
           type: parent.type,
@@ -121,6 +130,20 @@ export const assetsRouter = createTRPCRouter({
           parent: true,
         },
       });
+
+      // Deserialize tags for frontend compatibility
+      return {
+        ...rawAsset,
+        tags: rawAsset.tags ? (JSON.parse(rawAsset.tags) as string[]) : [],
+        parent: rawAsset.parent
+          ? {
+              ...rawAsset.parent,
+              tags: rawAsset.parent.tags
+                ? (JSON.parse(rawAsset.parent.tags) as string[])
+                : [],
+            }
+          : null,
+      };
     }),
 
   // Approve an asset
@@ -169,7 +192,7 @@ export const assetsRouter = createTRPCRouter({
   getAssetById: publicProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      return await ctx.prisma.asset.findUnique({
+      const rawAsset = await ctx.prisma.asset.findUnique({
         where: { id: input.id },
         include: {
           agent: true,
@@ -184,6 +207,18 @@ export const assetsRouter = createTRPCRouter({
           },
         },
       });
+
+      if (!rawAsset) return null;
+
+      // Deserialize tags for frontend compatibility
+      return {
+        ...rawAsset,
+        tags: rawAsset.tags ? (JSON.parse(rawAsset.tags) as string[]) : [],
+        revisions: rawAsset.revisions.map((revision) => ({
+          ...revision,
+          tags: revision.tags ? (JSON.parse(revision.tags) as string[]) : [],
+        })),
+      };
     }),
 
   // Get available tags for filtering
@@ -194,8 +229,15 @@ export const assetsRouter = createTRPCRouter({
       },
     });
 
-    const allTags = assets.flatMap((asset) => asset.tags);
-    const uniqueTags = [...new Set(allTags)];
+    const allTags = assets.flatMap((asset: { tags: string | null }) => {
+      if (!asset.tags) return [];
+      try {
+        return JSON.parse(asset.tags) as string[];
+      } catch {
+        return [];
+      }
+    });
+    const uniqueTags = Array.from(new Set(allTags));
 
     return uniqueTags.sort();
   }),

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import {
   Brain,
-  Images,
+  Image,
   Settings,
   TrendingUp,
   CheckCircle,
@@ -38,7 +38,7 @@ export default function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Total Assets</CardTitle>
-            <Images className="h-4 w-4 text-muted-foreground" />
+            <Image className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">1,247</div>
@@ -112,7 +112,7 @@ export default function DashboardPage() {
           <Link href="/assets">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <Images className="h-8 w-8 text-primary" />
+                <Image className="h-8 w-8 text-primary" />
                 <div className="flex items-center space-x-1 text-sm text-blue-600">
                   <Clock className="h-4 w-4" />
                   <span>47 pending</span>

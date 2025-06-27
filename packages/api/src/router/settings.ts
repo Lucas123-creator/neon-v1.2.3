@@ -21,7 +21,7 @@ export const settingsRouter = createTRPCRouter({
 
       // Group by category
       const grouped = settings.reduce(
-        (acc, setting) => {
+        (acc: Record<string, typeof settings>, setting: any) => {
           if (!acc[setting.category]) {
             acc[setting.category] = [];
           }
@@ -122,7 +122,7 @@ export const settingsRouter = createTRPCRouter({
       },
     });
 
-    return apiKeys.map((key) => ({
+    return apiKeys.map((key: any) => ({
       ...key,
       value: "••••••••", // Mask the actual value
       isSet: true,
@@ -183,7 +183,7 @@ export const settingsRouter = createTRPCRouter({
       fallbackThreshold: 0.5,
       enableFallback: true,
       ...settings.reduce(
-        (acc, setting) => {
+        (acc: Record<string, any>, setting: any) => {
           let value: any = setting.value;
 
           // Parse based on type

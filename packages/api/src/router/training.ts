@@ -53,7 +53,10 @@ export const trainingRouter = createTRPCRouter({
 
       // Group events by week for graph data
       const weeklyData = events.reduce(
-        (acc, event) => {
+        (
+          acc: Record<string, { date: string; score: number; events: number }>,
+          event: any,
+        ) => {
           const week = new Date(event.createdAt).toISOString().split("T")[0];
           if (!acc[week]) {
             acc[week] = { date: week, score: event.scoreAfter || 0, events: 0 };
@@ -76,9 +79,13 @@ export const trainingRouter = createTRPCRouter({
             ? (totalChange / previousScore) * 100
             : 0,
         },
-        graphData: Object.values(weeklyData).sort((a, b) =>
-          a.date.localeCompare(b.date),
-        ),
+        graphData: (
+          Object.values(weeklyData) as {
+            date: string;
+            score: number;
+            events: number;
+          }[]
+        ).sort((a, b) => a.date.localeCompare(b.date)),
       };
     }),
 
@@ -97,7 +104,10 @@ export const trainingRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       return await ctx.prisma.trainingEvent.create({
-        data: input,
+        data: {
+          ...input,
+          metadata: input.metadata ? JSON.stringify(input.metadata) : null,
+        },
       });
     }),
 
@@ -115,7 +125,7 @@ export const trainingRouter = createTRPCRouter({
     });
 
     return agents
-      .map((agent) => {
+      .map((agent: any) => {
         const recentEvents = agent.trainingEvents;
         const currentScore = recentEvents[0]?.scoreAfter || 0;
         const previousScore = recentEvents[1]?.scoreAfter || 0;
@@ -129,8 +139,8 @@ export const trainingRouter = createTRPCRouter({
           lastTrainingEvent: recentEvents[0],
         };
       })
-      .filter((item) => item.needsAttention)
-      .sort((a, b) => a.currentScore - b.currentScore);
+      .filter((item: any) => item.needsAttention)
+      .sort((a: any, b: any) => a.currentScore - b.currentScore);
   }),
 
   // Get all agents with basic info

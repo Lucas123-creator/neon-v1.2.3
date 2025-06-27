@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import {
-  Images,
+  Image,
   Video,
   FileText,
   Filter,
@@ -44,10 +44,10 @@ export default function AssetsPage() {
   const totalAssets = assetsData?.total || 0;
 
   const filteredAssets = assets.filter(
-    (asset) =>
+    (asset: any) =>
       searchQuery === "" ||
       asset.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      asset.tags.some((tag) =>
+      asset.tags.some((tag: string) =>
         tag.toLowerCase().includes(searchQuery.toLowerCase()),
       ),
   );
@@ -77,7 +77,7 @@ export default function AssetsPage() {
   const getTypeIcon = (type: string) => {
     switch (type) {
       case "image":
-        return <Images className="h-4 w-4" />;
+        return <Image className="h-4 w-4" />;
       case "video":
         return <Video className="h-4 w-4" />;
       default:
@@ -107,7 +107,7 @@ export default function AssetsPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Total Assets</CardTitle>
-            <Images className="h-4 w-4 text-muted-foreground" />
+            <Image className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalAssets}</div>
@@ -124,7 +124,7 @@ export default function AssetsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-orange-600">
-              {assets.filter((a) => a.status === "pending").length}
+              {assets.filter((a: any) => a.status === "pending").length}
             </div>
             <p className="text-xs text-muted-foreground">Awaiting approval</p>
           </CardContent>
@@ -137,7 +137,7 @@ export default function AssetsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {assets.filter((a) => a.status === "approved").length}
+              {assets.filter((a: any) => a.status === "approved").length}
             </div>
             <p className="text-xs text-muted-foreground">Ready to use</p>
           </CardContent>
@@ -218,7 +218,7 @@ export default function AssetsPage() {
       {/* Assets Grid/List */}
       {filteredAssets.length === 0 ? (
         <div className="text-center py-12">
-          <Images className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <Image className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-medium mb-2">No assets found</h3>
           <p className="text-muted-foreground">
             {searchQuery
@@ -228,7 +228,7 @@ export default function AssetsPage() {
         </div>
       ) : viewMode === "grid" ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredAssets.map((asset) => (
+          {filteredAssets.map((asset: any) => (
             <AssetCard
               key={asset.id}
               asset={asset}
@@ -239,7 +239,7 @@ export default function AssetsPage() {
         </div>
       ) : (
         <div className="space-y-2">
-          {filteredAssets.map((asset) => (
+          {filteredAssets.map((asset: any) => (
             <Card key={asset.id} className="hover:shadow-md transition-shadow">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
@@ -276,7 +276,7 @@ export default function AssetsPage() {
 
                 {asset.tags.length > 0 && (
                   <div className="flex gap-1 mt-2">
-                    {asset.tags.slice(0, 3).map((tag) => (
+                    {asset.tags.slice(0, 3).map((tag: string) => (
                       <span
                         key={tag}
                         className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-secondary text-secondary-foreground"

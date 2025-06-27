@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  Images,
+  Image,
   Video,
   FileText,
   Eye,
@@ -27,7 +27,7 @@ export function AssetCard({ asset, onApprove, onReject }: AssetCardProps) {
   const getTypeIcon = (type: string) => {
     switch (type) {
       case "image":
-        return <Images className="h-5 w-5" />;
+        return <Image className="h-5 w-5" />;
       case "video":
         return <Video className="h-5 w-5" />;
       default:
@@ -120,7 +120,7 @@ export function AssetCard({ asset, onApprove, onReject }: AssetCardProps) {
         {/* Tags */}
         {asset.tags.length > 0 && (
           <div className="flex flex-wrap gap-1">
-            {asset.tags.slice(0, 2).map((tag) => (
+            {asset.tags.slice(0, 2).map((tag: string) => (
               <span
                 key={tag}
                 className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-secondary text-secondary-foreground"

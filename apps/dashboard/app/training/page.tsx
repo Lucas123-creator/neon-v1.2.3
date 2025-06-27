@@ -117,7 +117,7 @@ export default function TrainingPage() {
               className="flex h-10 w-[200px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <option value="">Select an agent</option>
-              {agents.map((agent) => (
+              {agents.map((agent: any) => (
                 <option key={agent.id} value={agent.id}>
                   {agent.name} ({agent.type})
                 </option>
@@ -177,7 +177,7 @@ export default function TrainingPage() {
                     All agents performing well! 🎉
                   </p>
                 ) : (
-                  opportunities.map((item) => (
+                  opportunities.map((item: any) => (
                     <div key={item.agent.id} className="border rounded-lg p-3">
                       <div className="flex items-center justify-between mb-2">
                         <span className="font-medium">{item.agent.name}</span>

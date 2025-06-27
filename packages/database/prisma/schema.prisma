@@ -35,7 +35,7 @@ model TrainingEvent {
   scoreBefore Float?
   scoreAfter  Float?
   
-  metadata    Json?
+  metadata    String? // JSON as string for SQLite compatibility
   notes       String?
   
   createdAt   DateTime @default(now())
@@ -57,7 +57,7 @@ model Asset {
   status      String @default("pending") // "pending", "approved", "rejected"
   
   campaignId  String?
-  tags        String[] // For filtering
+  tags        String? // JSON array as string for SQLite compatibility
   
   approvedAt  DateTime?
   approvedBy  String?

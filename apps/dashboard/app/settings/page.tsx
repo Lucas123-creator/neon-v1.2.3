@@ -30,7 +30,7 @@ export default function SettingsPage() {
     description: "",
   });
 
-  const { data: settings = {} } = api.settings.getSystemSettings.useQuery();
+  const { data: settings = {} } = api.settings.getSystemSettings.useQuery({});
   const { data: featureFlags = [] } = api.settings.getFeatureFlags.useQuery();
   const { data: apiKeys = [] } = api.settings.listKeys.useQuery();
   const { data: aiBehavior } = api.settings.getAIBehaviorSettings.useQuery();
@@ -46,7 +46,7 @@ export default function SettingsPage() {
     maxTokens: aiBehavior?.maxTokens || 1000,
     retryCount: aiBehavior?.retryCount || 3,
     fallbackThreshold: aiBehavior?.fallbackThreshold || 0.5,
-    enableFallback: aiBehavior?.enableFallback || true,
+    enableFallback: Boolean(aiBehavior?.enableFallback ?? true),
   });
 
   const handleSaveAISettings = async () => {
@@ -84,7 +84,7 @@ export default function SettingsPage() {
       {/* Tabs */}
       <div className="border-b">
         <nav className="flex space-x-8">
-          {tabs.map((tab) => {
+          {tabs.map((tab: any) => {
             const Icon = tab.icon;
             return (
               <button
@@ -316,7 +316,7 @@ export default function SettingsPage() {
                   </p>
                 ) : (
                   <div className="space-y-2">
-                    {apiKeys.map((key) => (
+                    {apiKeys.map((key: any) => (
                       <div
                         key={key.id}
                         className="flex items-center justify-between p-3 border rounded-lg"
@@ -389,7 +389,7 @@ export default function SettingsPage() {
                   No feature flags configured.
                 </p>
               ) : (
-                featureFlags.map((flag) => (
+                featureFlags.map((flag: any) => (
                   <div
                     key={flag.id}
                     className="flex items-center justify-between p-3 border rounded-lg"

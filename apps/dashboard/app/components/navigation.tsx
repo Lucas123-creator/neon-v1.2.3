@@ -8,7 +8,7 @@ import {
   Settings,
   Home,
   BarChart3,
-  Images,
+  Image,
   Cog,
 } from "lucide-react";
 import { cn } from "@neon/ui";
@@ -16,7 +16,7 @@ import { cn } from "@neon/ui";
 const navigation = [
   { name: "Dashboard", href: "/", icon: Home },
   { name: "Agent Training", href: "/training", icon: Brain },
-  { name: "Asset Library", href: "/assets", icon: Images },
+  { name: "Asset Library", href: "/assets", icon: Image },
   { name: "System Settings", href: "/settings", icon: Cog },
 ];
 
