@@ -64,11 +64,17 @@ export function AgentLearningGraph({ data }: AgentLearningGraphProps) {
             <XAxis
               dataKey="date"
               tick={{ fontSize: 12 }}
-              tickFormatter={(value) => new Date(value).toLocaleDateString()}
+              tickFormatter={(value: any) => {
+                const dateObj = new Date(value);
+                return dateObj.toLocaleDateString("en-US");
+              }}
             />
             <YAxis tick={{ fontSize: 12 }} domain={[0, 1]} />
             <Tooltip
-              labelFormatter={(value) => new Date(value).toLocaleDateString()}
+              labelFormatter={(value: any) => {
+                const dateObj = new Date(value);
+                return dateObj.toLocaleDateString("en-US");
+              }}
               formatter={(value: number) => [value.toFixed(3), "Score"]}
             />
             <Line

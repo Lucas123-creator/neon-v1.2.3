@@ -257,7 +257,10 @@ export default function AssetsPage() {
                         )}
                         <span>•</span>
                         <span>
-                          {new Date(asset.createdAt).toLocaleDateString()}
+                          {(() => {
+                            const dateObj = new Date(asset.createdAt);
+                            return dateObj.toLocaleDateString("en-US");
+                          })()}
                         </span>
                       </div>
                     </div>

@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure } from "../trpc";
+import { createRouter, publicProcedure } from "../trpc";
 
-export const settingsRouter = createTRPCRouter({
+export const settingsRouter = createRouter({
   // Get all system settings
   getSystemSettings: publicProcedure
     .input(

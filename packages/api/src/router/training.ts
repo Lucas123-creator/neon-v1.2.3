@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure } from "../trpc";
+import { createRouter, publicProcedure } from "../trpc";
 
-export const trainingRouter = createTRPCRouter({
+export const trainingRouter = createRouter({
   // Get agent training history with performance data
   getAgentTrainingHistory: publicProcedure
     .input(

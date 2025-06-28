@@ -139,7 +139,12 @@ export function AssetCard({ asset, onApprove, onReject }: AssetCardProps) {
         {/* Meta */}
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <div>{asset.agent && <span>{asset.agent.name}</span>}</div>
-          <span>{new Date(asset.createdAt).toLocaleDateString()}</span>
+          <span>
+            {(() => {
+              const dateObj = new Date(asset.createdAt);
+              return dateObj.toLocaleDateString("en-US");
+            })()}
+          </span>
         </div>
 
         {/* Actions */}

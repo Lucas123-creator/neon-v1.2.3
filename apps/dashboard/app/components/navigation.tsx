@@ -10,6 +10,9 @@ import {
   BarChart3,
   Image,
   Cog,
+  Globe,
+  Lightbulb,
+  MessageSquare,
 } from "lucide-react";
 import { cn } from "@neon/ui";
 
@@ -18,6 +21,9 @@ const navigation = [
   { name: "Agent Training", href: "/training", icon: Brain },
   { name: "Asset Library", href: "/assets", icon: Image },
   { name: "System Settings", href: "/settings", icon: Cog },
+  { name: "Market Insights", href: "/insights", icon: Globe },
+  { name: "Innovation Lab", href: "/lab", icon: Lightbulb },
+  { name: "Feedback Center", href: "/feedback", icon: MessageSquare },
 ];
 
 export function Navigation() {

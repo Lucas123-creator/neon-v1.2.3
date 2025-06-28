@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure } from "../trpc";
+import { createRouter, publicProcedure } from "../trpc";
 
-export const assetsRouter = createTRPCRouter({
+export const assetsRouter = createRouter({
   // Get all assets with filtering
   getAssets: publicProcedure
     .input(
