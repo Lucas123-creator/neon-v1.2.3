@@ -1,0 +1,45 @@
+{
+  "version": "1.0.0",
+  "description": "Brand safety blacklist for TwitterAgent v2",
+  "lastUpdated": "2025-06-25T22:31:00Z",
+  "categories": {
+    "profanity": [
+      "bad_word_1",
+      "bad_word_2",
+      "bad_word_3"
+    ],
+    "controversial": [
+      "controversial_topic_1",
+      "controversial_topic_2"
+    ],
+    "spam": [
+      "buy_now",
+      "limited_time",
+      "act_fast",
+      "click_here"
+    ],
+    "political": [
+      "political_term_1",
+      "political_term_2"
+    ],
+    "sensitive": [
+      "sensitive_topic_1",
+      "sensitive_topic_2"
+    ]
+  },
+  "campaignSpecific": {
+    "campaign-123": [
+      "competitor_name",
+      "avoided_topic"
+    ],
+    "campaign-456": [
+      "sensitive_industry_term"
+    ]
+  },
+  "settings": {
+    "enableStrictMode": false,
+    "autoRevise": true,
+    "logViolations": true,
+    "confidenceThreshold": 0.8
+  }
+} 
