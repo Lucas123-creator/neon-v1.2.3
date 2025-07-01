@@ -1,255 +1,331 @@
 import { z } from "zod";
-import { createRouter, publicProcedure } from "../trpc";
+import { createTRPCRouter, publicProcedure } from "../trpc";
 
-export const settingsRouter = createRouter({
-  // Get all system settings
-  getSystemSettings: publicProcedure
-    .input(
-      z.object({
-        category: z
-          .enum(["ai_behavior", "api_keys", "features", "limits"])
-          .optional(),
-      }),
-    )
-    .query(async ({ ctx, input }) => {
-      const where = input.category ? { category: input.category } : {};
-
-      const settings = await ctx.prisma.setting.findMany({
-        where,
-        orderBy: [{ category: "asc" }, { key: "asc" }],
-      });
-
-      // Group by category
-      const grouped = settings.reduce(
-        (acc: Record<string, typeof settings>, setting: any) => {
-          if (!acc[setting.category]) {
-            acc[setting.category] = [];
-          }
-          acc[setting.category].push(setting);
-          return acc;
-        },
-        {} as Record<string, typeof settings>,
-      );
-
-      return grouped;
-    }),
-
-  // Update a setting
-  updateSetting: publicProcedure
-    .input(
-      z.object({
-        key: z.string(),
-        value: z.string(),
-        type: z
-          .enum(["string", "number", "boolean", "json", "encrypted"])
-          .optional(),
-        category: z
-          .enum(["ai_behavior", "api_keys", "features", "limits"])
-          .optional(),
-        description: z.string().optional(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const { key, ...data } = input;
-
-      return await ctx.prisma.setting.upsert({
-        where: { key },
-        update: data,
-        create: {
-          key,
-          ...data,
-          type: data.type || "string",
-          category: data.category || "features",
-        },
-      });
-    }),
-
-  // Get feature flags
-  getFeatureFlags: publicProcedure.query(async ({ ctx }) => {
-    return await ctx.prisma.featureFlag.findMany({
-      orderBy: {
-        key: "asc",
+export const settingsRouter = createTRPCRouter({
+  // Get user settings
+  getUserSettings: publicProcedure.query(async ({ ctx }) => {
+    // Mock user settings - replace with real database query
+    const userSettings = {
+      id: 1,
+      email: "user@example.com",
+      name: "John Doe",
+      role: "admin",
+      preferences: {
+        theme: "dark",
+        language: "en",
+        timezone: "UTC",
+        notifications: {
+          email: true,
+          push: true,
+          sms: false
+        }
       },
-    });
-  }),
-
-  // Toggle feature flag
-  toggleFeatureFlag: publicProcedure
-    .input(
-      z.object({
-        key: z.string(),
-        enabled: z.boolean(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      return await ctx.prisma.featureFlag.upsert({
-        where: { key: input.key },
-        update: { enabled: input.enabled },
-        create: {
-          key: input.key,
-          enabled: input.enabled,
+      integrations: {
+        email: {
+          provider: "sendgrid",
+          apiKey: "***",
+          connected: true
         },
-      });
-    }),
-
-  // Create new feature flag
-  createFeatureFlag: publicProcedure
-    .input(
-      z.object({
-        key: z.string(),
-        enabled: z.boolean().default(false),
-        description: z.string().optional(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      return await ctx.prisma.featureFlag.create({
-        data: input,
-      });
-    }),
-
-  // Get API keys (masked for security)
-  listKeys: publicProcedure.query(async ({ ctx }) => {
-    const apiKeys = await ctx.prisma.setting.findMany({
-      where: {
-        category: "api_keys",
+        social: {
+          twitter: { connected: true, username: "@example" },
+          linkedin: { connected: false, username: "" },
+          facebook: { connected: true, username: "example" }
+        },
+        analytics: {
+          googleAnalytics: { connected: true, trackingId: "GA-123456" },
+          facebookPixel: { connected: false, pixelId: "" }
+        }
       },
-      select: {
-        id: true,
-        key: true,
-        description: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
-
-    return apiKeys.map((key: any) => ({
-      ...key,
-      value: "••••••••", // Mask the actual value
-      isSet: true,
-    }));
-  }),
-
-  // Set encrypted API key
-  setApiKey: publicProcedure
-    .input(
-      z.object({
-        key: z.string(),
-        value: z.string(),
-        description: z.string().optional(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      // In a real implementation, you'd encrypt the value here
-      const encryptedValue = Buffer.from(input.value).toString("base64"); // Simple encoding for demo
-
-      return await ctx.prisma.setting.upsert({
-        where: { key: input.key },
-        update: {
-          value: encryptedValue,
-          description: input.description,
-        },
-        create: {
-          key: input.key,
-          value: encryptedValue,
-          type: "encrypted",
-          category: "api_keys",
-          description: input.description,
-        },
-      });
-    }),
-
-  // Delete a setting
-  deleteSetting: publicProcedure
-    .input(z.object({ key: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      return await ctx.prisma.setting.delete({
-        where: { key: input.key },
-      });
-    }),
-
-  // Get AI behavior settings specifically
-  getAIBehaviorSettings: publicProcedure.query(async ({ ctx }) => {
-    const settings = await ctx.prisma.setting.findMany({
-      where: {
-        category: "ai_behavior",
-      },
-    });
-
-    // Convert to a more usable format with defaults
-    const behaviorSettings = {
-      temperature: 0.7,
-      maxTokens: 1000,
-      retryCount: 3,
-      fallbackThreshold: 0.5,
-      enableFallback: true,
-      ...settings.reduce(
-        (acc: Record<string, any>, setting: any) => {
-          let value: any = setting.value;
-
-          // Parse based on type
-          switch (setting.type) {
-            case "number":
-              value = parseFloat(setting.value);
-              break;
-            case "boolean":
-              value = setting.value === "true";
-              break;
-            case "json":
-              try {
-                value = JSON.parse(setting.value);
-              } catch {
-                value = setting.value;
-              }
-              break;
-          }
-
-          acc[setting.key] = value;
-          return acc;
-        },
-        {} as Record<string, any>,
-      ),
+      billing: {
+        plan: "pro",
+        status: "active",
+        nextBilling: "2024-07-15",
+        usage: {
+          agents: 4,
+          campaigns: 12,
+          storage: "2.5GB"
+        }
+      }
     };
 
-    return behaviorSettings;
+    return { userSettings };
   }),
 
-  // Bulk update AI behavior settings
-  updateAIBehaviorSettings: publicProcedure
+  // Update user settings
+  updateUserSettings: publicProcedure
     .input(
       z.object({
-        temperature: z.number().min(0).max(2).optional(),
-        maxTokens: z.number().min(1).max(4000).optional(),
-        retryCount: z.number().min(0).max(10).optional(),
-        fallbackThreshold: z.number().min(0).max(1).optional(),
-        enableFallback: z.boolean().optional(),
-      }),
+        name: z.string().optional(),
+        preferences: z.object({
+          theme: z.enum(["light", "dark", "auto"]).optional(),
+          language: z.string().optional(),
+          timezone: z.string().optional(),
+          notifications: z.object({
+            email: z.boolean().optional(),
+            push: z.boolean().optional(),
+            sms: z.boolean().optional(),
+          }).optional(),
+        }).optional(),
+      })
     )
     .mutation(async ({ ctx, input }) => {
-      const updates = Object.entries(input).map(([key, value]) => ({
-        key,
-        value: String(value),
-        type: typeof value === "number" ? "number" : "boolean",
-        category: "ai_behavior",
-      }));
+      // Mock settings update - replace with real database update
+      const updatedSettings = {
+        id: 1,
+        email: "user@example.com",
+        name: input.name || "John Doe",
+        role: "admin",
+        preferences: {
+          theme: input.preferences?.theme || "dark",
+          language: input.preferences?.language || "en",
+          timezone: input.preferences?.timezone || "UTC",
+          notifications: {
+            email: input.preferences?.notifications?.email ?? true,
+            push: input.preferences?.notifications?.push ?? true,
+            sms: input.preferences?.notifications?.sms ?? false
+          }
+        },
+        integrations: {
+          email: {
+            provider: "sendgrid",
+            apiKey: "***",
+            connected: true
+          },
+          social: {
+            twitter: { connected: true, username: "@example" },
+            linkedin: { connected: false, username: "" },
+            facebook: { connected: true, username: "example" }
+          },
+          analytics: {
+            googleAnalytics: { connected: true, trackingId: "GA-123456" },
+            facebookPixel: { connected: false, pixelId: "" }
+          }
+        },
+        billing: {
+          plan: "pro",
+          status: "active",
+          nextBilling: "2024-07-15",
+          usage: {
+            agents: 4,
+            campaigns: 12,
+            storage: "2.5GB"
+          }
+        }
+      };
 
-      const results = await Promise.all(
-        updates.map((update) =>
-          ctx.prisma.setting.upsert({
-            where: { key: update.key },
-            update: {
-              value: update.value,
-              type: update.type,
-            },
-            create: {
-              key: update.key,
-              value: update.value,
-              type: update.type,
-              category: update.category,
-            },
-          }),
-        ),
-      );
+      return { userSettings: updatedSettings };
+    }),
 
-      return results;
+  // Get integration settings
+  getIntegrationSettings: publicProcedure.query(async ({ ctx }) => {
+    // Mock integration settings - replace with real database query
+    const integrations = {
+      email: {
+        provider: "sendgrid",
+        apiKey: "***",
+        connected: true,
+        status: "active",
+        lastSync: "2 min ago"
+      },
+      social: {
+        twitter: { 
+          connected: true, 
+          username: "@example",
+          status: "active",
+          lastSync: "5 min ago"
+        },
+        linkedin: { 
+          connected: false, 
+          username: "",
+          status: "disconnected",
+          lastSync: null
+        },
+        facebook: { 
+          connected: true, 
+          username: "example",
+          status: "active",
+          lastSync: "1 min ago"
+        }
+      },
+      analytics: {
+        googleAnalytics: { 
+          connected: true, 
+          trackingId: "GA-123456",
+          status: "active",
+          lastSync: "10 min ago"
+        },
+        facebookPixel: { 
+          connected: false, 
+          pixelId: "",
+          status: "disconnected",
+          lastSync: null
+        }
+      }
+    };
+
+    return { integrations };
+  }),
+
+  // Update integration settings
+  updateIntegration: publicProcedure
+    .input(
+      z.object({
+        type: z.enum(["email", "social", "analytics"]),
+        provider: z.string(),
+        config: z.record(z.any()),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { type, provider, config } = input;
+
+      // Mock integration update - replace with real database update
+      const updatedIntegration = {
+        type,
+        provider,
+        config,
+        connected: true,
+        status: "active",
+        lastSync: "Just now"
+      };
+
+      return { integration: updatedIntegration };
+    }),
+
+  // Get billing information
+  getBillingInfo: publicProcedure.query(async ({ ctx }) => {
+    // Mock billing information - replace with real database query
+    const billing = {
+      plan: "pro",
+      status: "active",
+      nextBilling: "2024-07-15",
+      amount: 99.00,
+      currency: "USD",
+      usage: {
+        agents: 4,
+        campaigns: 12,
+        storage: "2.5GB",
+        limits: {
+          agents: 10,
+          campaigns: 50,
+          storage: "10GB"
+        }
+      },
+      invoices: [
+        {
+          id: "INV-001",
+          date: "2024-06-15",
+          amount: 99.00,
+          status: "paid"
+        },
+        {
+          id: "INV-002",
+          date: "2024-05-15",
+          amount: 99.00,
+          status: "paid"
+        }
+      ]
+    };
+
+    return { billing };
+  }),
+
+  // Update billing plan
+  updateBillingPlan: publicProcedure
+    .input(
+      z.object({
+        plan: z.enum(["starter", "pro", "enterprise"]),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { plan } = input;
+
+      // Mock billing plan update - replace with real billing update
+      const updatedBilling = {
+        plan,
+        status: "active",
+        nextBilling: "2024-07-15",
+        amount: plan === "starter" ? 29.00 : plan === "pro" ? 99.00 : 299.00,
+        currency: "USD",
+        usage: {
+          agents: 4,
+          campaigns: 12,
+          storage: "2.5GB",
+          limits: {
+            agents: plan === "starter" ? 3 : plan === "pro" ? 10 : 50,
+            campaigns: plan === "starter" ? 10 : plan === "pro" ? 50 : 200,
+            storage: plan === "starter" ? "5GB" : plan === "pro" ? "10GB" : "100GB"
+          }
+        }
+      };
+
+      return { billing: updatedBilling };
+    }),
+
+  // Get system settings
+  getSystemSettings: publicProcedure.query(async ({ ctx }) => {
+    // Mock system settings - replace with real database query
+    const systemSettings = {
+      maintenance: {
+        enabled: false,
+        scheduledTime: "2024-07-01T02:00:00Z",
+        duration: "2 hours"
+      },
+      security: {
+        twoFactorAuth: true,
+        sessionTimeout: 3600,
+        ipWhitelist: ["192.168.1.0/24"]
+      },
+      performance: {
+        cacheEnabled: true,
+        compressionEnabled: true,
+        cdnEnabled: true
+      }
+    };
+
+    return { systemSettings };
+  }),
+
+  // Update system settings
+  updateSystemSettings: publicProcedure
+    .input(
+      z.object({
+        maintenance: z.object({
+          enabled: z.boolean().optional(),
+          scheduledTime: z.string().optional(),
+          duration: z.string().optional(),
+        }).optional(),
+        security: z.object({
+          twoFactorAuth: z.boolean().optional(),
+          sessionTimeout: z.number().optional(),
+          ipWhitelist: z.array(z.string()).optional(),
+        }).optional(),
+        performance: z.object({
+          cacheEnabled: z.boolean().optional(),
+          compressionEnabled: z.boolean().optional(),
+          cdnEnabled: z.boolean().optional(),
+        }).optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Mock system settings update - replace with real database update
+      const updatedSystemSettings = {
+        maintenance: {
+          enabled: input.maintenance?.enabled ?? false,
+          scheduledTime: input.maintenance?.scheduledTime || "2024-07-01T02:00:00Z",
+          duration: input.maintenance?.duration || "2 hours"
+        },
+        security: {
+          twoFactorAuth: input.security?.twoFactorAuth ?? true,
+          sessionTimeout: input.security?.sessionTimeout || 3600,
+          ipWhitelist: input.security?.ipWhitelist || ["192.168.1.0/24"]
+        },
+        performance: {
+          cacheEnabled: input.performance?.cacheEnabled ?? true,
+          compressionEnabled: input.performance?.compressionEnabled ?? true,
+          cdnEnabled: input.performance?.cdnEnabled ?? true
+        }
+      };
+
+      return { systemSettings: updatedSystemSettings };
     }),
 });
