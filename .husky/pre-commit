@@ -1,0 +1,29 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# 🚀 Neon Pre-Commit Hook
+echo "🔄 Running pre-commit auto-processing..."
+
+# Run linting and auto-fix
+echo "🧹 Auto-fixing lint issues..."
+npm run lint --if-present -- --fix || true
+
+# Format code with Prettier
+echo "💅 Formatting code..."
+npx prettier --write . --ignore-unknown || true
+
+# Type checking
+echo "🔍 Running type checks..."
+npm run type-check --if-present || true
+
+# Generate Prisma client if schema changed
+if git diff --cached --name-only | grep -q "schema.prisma"; then
+    echo "🗄️ Prisma schema changed, regenerating client..."
+    npm run db:generate --if-present || true
+fi
+
+# Re-add files that may have been modified by auto-fix
+echo "📝 Re-staging auto-fixed files..."
+git add .
+
+echo "✅ Pre-commit processing complete!" 

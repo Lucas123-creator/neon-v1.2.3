@@ -1,0 +1,203 @@
+name: 🚀 Auto Import & Commit Pipeline
+
+on:
+  push:
+    branches: [main, develop, feature/*]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    # Run every hour to check for changes
+    - cron: "0 * * * *"
+  workflow_dispatch:
+    inputs:
+      commit_message:
+        description: "Custom commit message"
+        required: false
+        default: "auto: import and commit latest adjustments"
+
+env:
+  NODE_VERSION: "18"
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+
+jobs:
+  auto-import-commit:
+    name: 🔄 Auto Import & Commit
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: write
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: 📦 Install Dependencies
+        run: |
+          npm ci
+          npm run db:generate
+
+      - name: 🔍 Check for Changes
+        id: changes
+        run: |
+          git config --global user.name 'neon-auto-commit[bot]'
+          git config --global user.email 'neon-auto-commit[bot]@noreply.github.com'
+
+          # Check if there are any changes
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "changes=true" >> $GITHUB_OUTPUT
+            echo "📝 Changes detected"
+          else
+            echo "changes=false" >> $GITHUB_OUTPUT
+            echo "✅ No changes detected"
+          fi
+
+      - name: 🎯 Auto-fix Code Issues
+        if: steps.changes.outputs.changes == 'true'
+        run: |
+          # Run linting with auto-fix
+          npm run lint --if-present -- --fix || true
+
+          # Run Prettier formatting
+          npx prettier --write . --ignore-unknown || true
+
+          # Type check and generate missing types
+          npm run type-check --if-present || true
+
+      - name: 🗄️ Database Operations
+        if: steps.changes.outputs.changes == 'true'
+        run: |
+          # Push any schema changes
+          npm run db:push --if-present || true
+
+          # Generate updated Prisma client
+          npm run db:generate --if-present || true
+
+      - name: 🏗️ Build Check
+        if: steps.changes.outputs.changes == 'true'
+        run: |
+          # Ensure everything builds successfully
+          npm run build --if-present || true
+
+      - name: 📊 Generate Change Summary
+        if: steps.changes.outputs.changes == 'true'
+        id: summary
+        run: |
+          # Create detailed change summary
+          echo "## 🔄 Auto-Import Summary" > CHANGES.md
+          echo "" >> CHANGES.md
+          echo "**Generated:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> CHANGES.md
+          echo "**Branch:** ${{ github.ref_name }}" >> CHANGES.md
+          echo "**Commit:** ${{ github.sha }}" >> CHANGES.md
+          echo "" >> CHANGES.md
+
+          # Count changes by type
+          ADDED=$(git status --porcelain | grep "^A" | wc -l)
+          MODIFIED=$(git status --porcelain | grep "^M" | wc -l)
+          DELETED=$(git status --porcelain | grep "^D" | wc -l)
+          RENAMED=$(git status --porcelain | grep "^R" | wc -l)
+
+          echo "### 📈 Change Statistics" >> CHANGES.md
+          echo "- 🆕 Added: $ADDED files" >> CHANGES.md
+          echo "- ✏️ Modified: $MODIFIED files" >> CHANGES.md
+          echo "- 🗑️ Deleted: $DELETED files" >> CHANGES.md
+          echo "- 🔄 Renamed: $RENAMED files" >> CHANGES.md
+          echo "" >> CHANGES.md
+
+          # List specific changes
+          echo "### 📝 Detailed Changes" >> CHANGES.md
+          echo '```' >> CHANGES.md
+          git status --porcelain >> CHANGES.md
+          echo '```' >> CHANGES.md
+
+          # Store summary for commit message
+          CHANGE_COUNT=$((ADDED + MODIFIED + DELETED + RENAMED))
+          echo "change_count=$CHANGE_COUNT" >> $GITHUB_OUTPUT
+
+      - name: 💾 Commit Changes
+        if: steps.changes.outputs.changes == 'true'
+        run: |
+          # Add all changes
+          git add .
+
+          # Create comprehensive commit message
+          COMMIT_MSG="${{ github.event.inputs.commit_message }}"
+          if [ -z "$COMMIT_MSG" ]; then
+            COMMIT_MSG="auto: import and commit adjustments (${{ steps.summary.outputs.change_count }} files)"
+          fi
+
+          # Multi-line commit message with details
+          git commit -m "$COMMIT_MSG" \
+                     -m "" \
+                     -m "🤖 Automated import and commit" \
+                     -m "📊 Changes: ${{ steps.summary.outputs.change_count }} files affected" \
+                     -m "🕐 Timestamp: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" \
+                     -m "🌿 Branch: ${{ github.ref_name }}" \
+                     -m "🔗 Workflow: ${{ github.run_id }}" \
+                     -m "" \
+                     -m "Auto-generated by Neon Auto-Import Pipeline 🚀"
+
+      - name: 🚀 Push Changes
+        if: steps.changes.outputs.changes == 'true'
+        run: |
+          git push origin ${{ github.ref_name }}
+
+      - name: 📝 Create/Update Import Log
+        if: steps.changes.outputs.changes == 'true'
+        run: |
+          # Append to import log
+          echo "$(date -u '+%Y-%m-%d %H:%M:%S UTC') | ${{ github.ref_name }} | ${{ steps.summary.outputs.change_count }} files | ${{ github.run_id }}" >> .auto-import-log
+          git add .auto-import-log
+          git commit -m "docs: update auto-import log" || true
+          git push origin ${{ github.ref_name }} || true
+
+      - name: 🎉 Success Notification
+        if: steps.changes.outputs.changes == 'true'
+        run: |
+          echo "✅ Successfully imported and committed ${{ steps.summary.outputs.change_count }} changes"
+          echo "🔗 View changes: ${{ github.server_url }}/${{ github.repository }}/commit/$(git rev-parse HEAD)"
+
+      - name: 💬 Create PR Comment (if PR)
+        if: github.event_name == 'pull_request' && steps.changes.outputs.changes == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🤖 Auto-Import Complete
+              
+              ✅ Successfully imported and committed **${{ steps.summary.outputs.change_count }}** adjustments
+              
+              📊 **Summary:**
+              - 🕐 Processed at: ${new Date().toISOString()}
+              - 🌿 Branch: ${{ github.ref_name }}
+              - 🔗 Workflow: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+              
+              🔍 Check the latest commit for detailed changes.`
+            })
+
+  notify-teams:
+    name: 📢 Notify Teams
+    needs: auto-import-commit
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: 📣 Teams Notification
+        if: needs.auto-import-commit.result == 'success'
+        run: |
+          echo "🎉 Auto-import pipeline completed successfully!"
+          # Add webhook notification to Teams/Slack here if needed

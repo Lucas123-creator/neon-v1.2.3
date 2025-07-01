@@ -1,0 +1,249 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Agent Training & Learning Models (Prompt 009)
+model Agent {
+  id          String @id @default(cuid())
+  name        String
+  type        String // "UGC", "outreach", "email", etc.
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  trainingEvents TrainingEvent[]
+  assets         Asset[]
+  
+  @@map("agents")
+}
+
+model TrainingEvent {
+  id          String @id @default(cuid())
+  agentId     String
+  agent       Agent  @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  
+  eventType   String // "prompt_update", "fine_tune", "score_adjustment"
+  scoreChange Float?
+  scoreBefore Float?
+  scoreAfter  Float?
+  
+  metadata    String? // JSON as string for SQLite compatibility
+  notes       String?
+  
+  createdAt   DateTime @default(now())
+  
+  @@map("training_events")
+}
+
+// Asset Library Models (Prompt 010)
+model Asset {
+  id          String @id @default(cuid())
+  agentId     String?
+  agent       Agent? @relation(fields: [agentId], references: [id], onDelete: SetNull)
+  
+  type        String // "image", "video", "copy", "text"
+  title       String
+  content     String? // For text/copy assets
+  url         String? // For media assets
+  
+  status      String @default("pending") // "pending", "approved", "rejected"
+  
+  campaignId  String?
+  tags        String? // JSON array as string for SQLite compatibility
+  
+  approvedAt  DateTime?
+  approvedBy  String?
+  rejectedAt  DateTime?
+  rejectedBy  String?
+  
+  parentId    String? // For revisions/remixes
+  parent      Asset?  @relation("AssetRevisions", fields: [parentId], references: [id])
+  revisions   Asset[] @relation("AssetRevisions")
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("assets")
+}
+
+// System Settings Models (Prompt 011)
+model Setting {
+  id          String @id @default(cuid())
+  key         String @unique
+  value       String
+  type        String // "string", "number", "boolean", "json", "encrypted"
+  category    String // "ai_behavior", "api_keys", "features", "limits"
+  description String?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("settings")
+}
+
+model FeatureFlag {
+  id          String @id @default(cuid())
+  key         String @unique
+  enabled     Boolean @default(false)
+  description String?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("feature_flags")
+}
+
+// AI Market Pulse Panel Models (Prompt 012)
+model MarketTrend {
+  id          String @id @default(cuid())
+  region      String // "US", "EU", "APAC", etc.
+  category    String // "tech", "lifestyle", "business", etc.
+  keyword     String
+  score       Float // trend strength (0-100)
+  volume      Int // search volume
+  growth      Float // growth percentage
+  
+  metadata    String? // JSON for additional trend data
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("market_trends")
+}
+
+model PlatformSignal {
+  id          String @id @default(cuid())
+  platform    String // "tiktok", "instagram", "twitter", etc.
+  type        String // "hashtag", "sound", "effect", "topic"
+  content     String // hashtag name, sound ID, etc.
+  engagement  Int // likes, shares, views
+  velocity    Float // engagement rate
+  viralScore  Float // viral potential (0-100)
+  
+  metadata    String? // JSON for platform-specific data
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("platform_signals")
+}
+
+model ConversionHotspot {
+  id          String @id @default(cuid())
+  region      String
+  demographic String // "18-24", "25-34", etc.
+  interest    String // category of interest
+  roiScore    Float // ROI potential (0-100)
+  buyerIntent Float // purchase likelihood (0-100)
+  
+  metadata    String? // JSON for demographic and behavior data
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("conversion_hotspots")
+}
+
+// AI-Powered Product Innovation Lab Models (Prompt 013)
+model ProductIdea {
+  id          String @id @default(cuid())
+  title       String
+  description String
+  category    String // "neon-signs", "led-displays", "custom", etc.
+  submittedBy String // user ID or email
+  
+  status      String @default("pending") // "pending", "approved", "in_progress", "completed", "rejected"
+  priority    Int @default(0) // 0-100 priority score
+  
+  votes       Vote[]
+  mockups     Mockup[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("product_ideas")
+}
+
+model Mockup {
+  id          String @id @default(cuid())
+  ideaId      String
+  idea        ProductIdea @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  
+  type        String // "image", "3d_render", "sketch"
+  url         String? // generated mockup image URL
+  prompt      String? // AI generation prompt used
+  
+  aiGenerated Boolean @default(true)
+  approved    Boolean @default(false)
+  
+  metadata    String? // JSON for generation parameters
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("mockups")
+}
+
+model Vote {
+  id          String @id @default(cuid())
+  ideaId      String
+  idea        ProductIdea @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  
+  userId      String // voter ID or IP hash
+  voteType    String // "upvote", "downvote"
+  weight      Float @default(1.0) // vote weight (user reputation)
+  
+  createdAt   DateTime @default(now())
+  
+  @@unique([ideaId, userId])
+  @@map("votes")
+}
+
+// Feedback & Sentiment Intelligence Models (Prompt 014)
+model Feedback {
+  id          String @id @default(cuid())
+  source      String // "website", "email", "social", "support"
+  type        String // "bug_report", "feature_request", "complaint", "praise"
+  content     String
+  rating      Int? // 1-5 star rating if applicable
+  
+  customerInfo String? // JSON for customer details
+  context     String? // JSON for additional context
+  
+  sentimentAnalysis SentimentAnalysis?
+  
+  processed   Boolean @default(false)
+  responded   Boolean @default(false)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("feedback")
+}
+
+model SentimentAnalysis {
+  id          String @id @default(cuid())
+  feedbackId  String @unique
+  feedback    Feedback @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
+  
+  sentiment   String // "positive", "negative", "neutral"
+  confidence  Float // 0-1 confidence score
+  emotions    String? // JSON array of detected emotions
+  keywords    String? // JSON array of key terms
+  
+  suggestedResponse String? // AI-suggested response
+  urgencyLevel      Int @default(1) // 1-5 urgency scale
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("sentiment_analysis")
+}

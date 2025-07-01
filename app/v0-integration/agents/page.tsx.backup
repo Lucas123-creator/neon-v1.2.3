@@ -1,0 +1,346 @@
+"use client";
+
+import React from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card";
+import { Badge } from "../../components/ui/badge";
+import { Button } from "../../components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs";
+import { Progress } from "../../components/ui/progress";
+import { 
+  Bot, 
+  Play, 
+  Pause, 
+  Settings, 
+  Activity,
+  CheckCircle,
+  AlertCircle,
+  Clock,
+  Zap,
+  BarChart3,
+  Loader2
+} from "../../components/ui/icons";
+import { useAgents, useCreateAgent } from "../../lib/hooks";
+
+// Mock logs for now (will be replaced with real API later)
+const mockLogs = [
+  { id: 1, level: "info", message: "Content Agent: Generated 15 social media posts", timestamp: "2 min ago" },
+  { id: 2, level: "success", message: "Email Agent: Campaign sent successfully to 5,000 subscribers", timestamp: "5 min ago" },
+  { id: 3, level: "warning", message: "Trend Agent: High CPU usage detected", timestamp: "8 min ago" },
+  { id: 4, level: "error", message: "SEO Agent: API rate limit exceeded", timestamp: "15 min ago" },
+  { id: 5, level: "info", message: "Support Agent: Resolved 8 customer tickets", timestamp: "20 min ago" },
+];
+
+function AgentCard({ agent }: any) {
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "active": return "bg-green-500";
+      case "idle": return "bg-yellow-500";
+      case "training": return "bg-blue-500";
+      case "error": return "bg-red-500";
+      default: return "bg-gray-500";
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "active": return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case "idle": return <Clock className="h-4 w-4 text-yellow-500" />;
+      case "training": return <Activity className="h-4 w-4 text-blue-500" />;
+      case "error": return <AlertCircle className="h-4 w-4 text-red-500" />;
+      default: return <Clock className="h-4 w-4 text-gray-500" />;
+    }
+  };
+
+  // Calculate performance based on training events or use default
+  const performance = agent.trainingEvents?.[0]?.scoreAfter * 100 || 85;
+  const tasksCompleted = agent._count?.assets || 0;
+  const uptime = "99.8%"; // This would come from real monitoring
+  const avgResponseTime = "1.2s"; // This would come from real monitoring
+  const cpu = 23; // This would come from real monitoring
+  const memory = 45; // This would come from real monitoring
+  const lastActivity = "2 min ago"; // This would come from real monitoring
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-lg flex items-center">
+              <Bot className="h-5 w-5 mr-2" />
+              {agent.name}
+            </CardTitle>
+            <CardDescription className="flex items-center space-x-2 mt-1">
+              <Badge variant="outline">{agent.type}</Badge>
+              <div className="flex items-center space-x-1">
+                <div className={`w-2 h-2 rounded-full ${getStatusColor("active")}`} />
+                <span className="text-sm capitalize">active</span>
+              </div>
+            </CardDescription>
+          </div>
+          {getStatusIcon("active")}
+        </div>
+      </CardHeader>
+      <CardContent>
+        <p className="text-sm text-muted-foreground mb-4">
+          {agent.description || "AI agent for automated tasks and content generation"}
+        </p>
+        
+        <div className="space-y-3">
+          <div className="flex justify-between text-sm">
+            <span>Performance</span>
+            <span className="font-medium">{Math.round(performance)}%</span>
+          </div>
+          <Progress value={performance} className="h-2" />
+          
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <span className="text-muted-foreground">Uptime</span>
+              <p className="font-medium">{uptime}</p>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Tasks</span>
+              <p className="font-medium">{tasksCompleted}</p>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Response Time</span>
+              <p className="font-medium">{avgResponseTime}</p>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Last Activity</span>
+              <p className="font-medium">{lastActivity}</p>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex justify-between text-xs">
+              <span>CPU</span>
+              <span>{cpu}%</span>
+            </div>
+            <Progress value={cpu} className="h-1" />
+            <div className="flex justify-between text-xs">
+              <span>Memory</span>
+              <span>{memory}%</span>
+            </div>
+            <Progress value={memory} className="h-1" />
+          </div>
+        </div>
+
+        <div className="flex space-x-2 mt-4">
+          <Button size="sm" variant="outline">
+            <Play className="h-4 w-4 mr-1" />
+            Start
+          </Button>
+          <Button size="sm" variant="outline">
+            <Pause className="h-4 w-4 mr-1" />
+            Pause
+          </Button>
+          <Button size="sm" variant="outline">
+            <Settings className="h-4 w-4 mr-1" />
+            Config
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function LogEntry({ log }: any) {
+  const getLogColor = (level: string) => {
+    switch (level) {
+      case "success": return "text-green-500";
+      case "error": return "text-red-500";
+      case "warning": return "text-yellow-500";
+      default: return "text-blue-500";
+    }
+  };
+
+  const getLogIcon = (level: string) => {
+    switch (level) {
+      case "success": return <CheckCircle className="h-4 w-4" />;
+      case "error": return <AlertCircle className="h-4 w-4" />;
+      case "warning": return <AlertCircle className="h-4 w-4" />;
+      default: return <Activity className="h-4 w-4" />;
+    }
+  };
+
+  return (
+    <div className="flex items-start space-x-3 p-3 rounded-lg border">
+      <div className={`${getLogColor(log.level)} mt-0.5`}>
+        {getLogIcon(log.level)}
+      </div>
+      <div className="flex-1">
+        <p className="text-sm font-medium">{log.message}</p>
+        <p className="text-xs text-muted-foreground">{log.timestamp}</p>
+      </div>
+    </div>
+  );
+}
+
+export default function AgentsPage() {
+  const { data: agents, isLoading, error } = useAgents();
+  const createAgentMutation = useCreateAgent();
+
+  const handleCreateAgent = () => {
+    createAgentMutation.mutate({
+      name: "New Agent",
+      type: "content",
+      description: "AI agent for content generation"
+    });
+  };
+
+  // Calculate metrics from real data
+  const metrics = {
+    totalAgents: agents?.length || 0,
+    activeAgents: agents?.length || 0,
+    avgPerformance: agents?.length ? 
+      Math.round(agents.reduce((acc: number, agent: any) => 
+        acc + (agent.trainingEvents?.[0]?.scoreAfter * 100 || 85), 0) / agents.length) : 0,
+    totalTasks: agents?.reduce((acc: number, agent: any) => acc + (agent._count?.assets || 0), 0) || 0,
+    systemHealth: 94,
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <span className="ml-2">Loading agents...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <AlertCircle className="h-8 w-8 text-red-500" />
+        <span className="ml-2 text-red-500">Failed to load agents</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Agent Hub</h1>
+          <p className="text-muted-foreground">
+            Monitor and manage your AI agents
+          </p>
+        </div>
+        <Button onClick={handleCreateAgent} disabled={createAgentMutation.isPending}>
+          {createAgentMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+          <Bot className="h-4 w-4 mr-2" />
+          Deploy Agent
+        </Button>
+      </div>
+
+      {/* Metrics Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <Bot className="h-5 w-5 text-blue-500" />
+              <div>
+                <p className="text-sm font-medium">Total Agents</p>
+                <p className="text-2xl font-bold">{metrics.totalAgents}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <Activity className="h-5 w-5 text-green-500" />
+              <div>
+                <p className="text-sm font-medium">Active</p>
+                <p className="text-2xl font-bold">{metrics.activeAgents}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <BarChart3 className="h-5 w-5 text-purple-500" />
+              <div>
+                <p className="text-sm font-medium">Avg Performance</p>
+                <p className="text-2xl font-bold">{metrics.avgPerformance}%</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <Zap className="h-5 w-5 text-yellow-500" />
+              <div>
+                <p className="text-sm font-medium">Total Tasks</p>
+                <p className="text-2xl font-bold">{metrics.totalTasks}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <CheckCircle className="h-5 w-5 text-green-500" />
+              <div>
+                <p className="text-sm font-medium">System Health</p>
+                <p className="text-2xl font-bold">{metrics.systemHealth}%</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Tabs defaultValue="agents" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="agents">Active Agents</TabsTrigger>
+          <TabsTrigger value="logs">System Logs</TabsTrigger>
+          <TabsTrigger value="performance">Performance</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="agents" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {agents?.map((agent: any) => (
+              <AgentCard key={agent.id} agent={agent} />
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="logs" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>System Logs</CardTitle>
+              <CardDescription>
+                Real-time logs from all agents
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {mockLogs.map((log) => (
+                  <LogEntry key={log.id} log={log} />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="performance" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Performance Analytics</CardTitle>
+              <CardDescription>
+                Detailed performance metrics and trends
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-64 flex items-center justify-center text-muted-foreground">
+                Performance charts will be displayed here
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+} 
